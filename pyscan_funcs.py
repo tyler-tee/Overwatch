@@ -37,10 +37,10 @@ def scan_handler(ranges: dict, timestamp: datetime):
     """
     for site, subnet in ranges.items():
         # First we'll launch a masscan against our specified ranges
-        sp.run(f"masscan {subnet} --ports 0-65535 --rate 100000 -oJ {site}_mass_{timestamp}.json")
+        sp.run(f"masscan {subnet} --ports 0-65535 --rate 10000 -oJ {site}_mass_{timestamp}.json", shell=True)
 
         # Load, clean, and format our masscan json for nmap
         addresses, ports = masscan_parser(f"{site}_mass_{timestamp}.json")
 
         # Launch an Nmap scan for each set of data
-        sp.run(f"nmap -sS -sU {addresses} -p {ports} -oX {site}_{timestamp}.xml")
+        sp.run(f"nmap -sS -sU {addresses} -p {ports} -oX {site}_{timestamp}.xml", shell=True)
