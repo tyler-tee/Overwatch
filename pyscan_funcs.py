@@ -40,7 +40,7 @@ def scan_handler(ranges: dict, timestamp: datetime):
         # -p1-65535,U:1-65535 -> All ports, TCP and UDP alike
         # --rate 1000 -> 1k packets/sec; Can go faster, but speed seems to scale inversely with accuracy
         # -oL -> Exports results in plaintext
-        sp.run(f"masscan {subnet} -p1-65535,U:1-65535 --rate 10000 -oL {site}_mass_{timestamp}", shell=True)
+        sp.run(f"masscan {subnet} -p1-65535,U:1-65535 --rate 10000 -oL {site}_mass_{timestamp}.txt", shell=True)
 
         # Load, clean, and format our masscan txt for nmap
         addresses, ports = masscan_parser(f"{site}_mass_{timestamp}")
