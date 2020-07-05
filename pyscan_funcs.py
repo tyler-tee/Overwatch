@@ -49,9 +49,8 @@ def scan_handler(ranges: dict, timestamp: datetime, port_quant: str = '1-65535',
             scan_cmd += f"--udp-ports {port_quant}"
 
         scan_cmd += f" --rate 10000 -oL {mass_direct}\\{site}_mass_{timestamp}.txt"
-        print(scan_cmd)
 
-        sp.run(scan_cmd)
+        sp.run(scan_cmd, shell=True)
 
         # Load, clean, and format our masscan txt for nmap
         addresses, ports = masscan_parser(f"{mass_direct}\\{site}_mass_{timestamp}.txt")
