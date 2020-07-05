@@ -3,12 +3,17 @@ from os import mkdir
 import subprocess as sp
 from typing import Tuple
 
+nmap_direct, mass_direct = '.\\Scans\\Nmap', '.\\Scans\\Masscan'
+
 
 def direct_create():
-    try:
-        mkdir('Scans')
-    except FileExistsError:
-        pass
+    directories = ['Scans', nmap_direct, mass_direct]
+
+    for directory in directories:
+        try:
+            mkdir(directory)
+        except FileExistsError:
+            pass
 
 
 def masscan_parser(masscan_output: str) -> Tuple[str, str]:
@@ -21,9 +26,9 @@ def masscan_parser(masscan_output: str) -> Tuple[str, str]:
     with open(masscan_output) as f:
         temp_data = f.readlines()
 
-    addresses = ",".join(list(set(host.split()[3] for host in temp_data)))
+    addresses = " ".join({host.split()[3] for host in temp_data if len(host.split(' ')) > 2})
 
-    ports = ",".join(list(set(host.split()[2] for host in temp_data)))
+    ports = ",".join({host.split()[2] for host in temp_data if len(host.split(' ')) > 2})
 
     return addresses, ports
 
@@ -40,10 +45,12 @@ def scan_handler(ranges: dict, timestamp: datetime):
         # -p1-65535,U:1-65535 -> All ports, TCP and UDP alike
         # --rate 1000 -> 1k packets/sec; Can go faster, but speed seems to scale inversely with accuracy
         # -oL -> Exports results in plaintext
-        sp.run(f"masscan {subnet} -p1-65535,U:1-65535 --rate 10000 -oL {site}_mass_{timestamp}.txt", shell=True)
+        sp.run(f"masscan {subnet} -p1-65535,U:1-65535 --rate 10000 -oL {mass_direct}\\{site}_mass_{timestamp}.txt",
+               shell=True)
 
         # Load, clean, and format our masscan txt for nmap
-        addresses, ports = masscan_parser(f"{site}_mass_{timestamp}")
+        addresses, ports = masscan_parser(f"{mass_direct}\\{site}_mass_{timestamp}.txt")
 
         # Launch an Nmap scan for each set of data
-        sp.run(f"nmap -sS -sU {addresses} -p {ports} -oX {site}_{timestamp}.xml", shell=True)
+        sp.run(f"nmap -sS -sU -Pn {addresses} -p {ports} -oX {nmap_direct}\\{site}_{timestamp}.xml",
+               shell=True)
