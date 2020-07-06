@@ -1,7 +1,5 @@
-from config import shodan_key
 import datetime
 from os import mkdir
-import requests
 import subprocess as sp
 from typing import Tuple
 
@@ -22,7 +20,7 @@ def direct_create():
 
 def masscan_parser(masscan_output: str) -> Tuple[str, str]:
     """
-    Takes a file produced from Masscan's -oL option and returns two strings
+    Takes a file produced from Masscan's -oL option, returns online IP addresses and listening ports
     :param masscan_output:
     :return addresses, ports:
     """
@@ -31,40 +29,41 @@ def masscan_parser(masscan_output: str) -> Tuple[str, str]:
         temp_data = f.readlines()
 
     addresses = " ".join({host.split()[3] for host in temp_data if len(host.split(' ')) > 2})
-
     ports = ",".join({host.split()[2] for host in temp_data if len(host.split(' ')) > 2})
 
     return addresses, ports
 
 
-def scan_handler(ranges: dict, timestamp: datetime, port_quant: str = '1-65535', port_type: str = 'tcp_udp'):
+def scan_handler(ranges: dict, timestamp: datetime, port_quant: str = '1-65535', port_type: str = 'tcp_udp',
+                 os_detection: bool = True):
     for site, subnet in ranges.items():
-        scan_cmd = f"masscan {subnet} "
+        mass_cmd = f"masscan {subnet} "
+        nmap_cmd = "nmap "
 
         if port_type == 'tcp_udp':
-            scan_cmd += f"-p{port_quant},U:{port_quant}"
+            mass_cmd += f"-p{port_quant},U:{port_quant}"
+            nmap_cmd += f"-sS -sU "
+
         elif port_type == 'tcp':
-            scan_cmd += f"-p{port_quant}"
+            mass_cmd += f"-p{port_quant}"
+            nmap_cmd += f"-sS "
+
         else:
-            scan_cmd += f"--udp-ports {port_quant}"
+            mass_cmd += f"--udp-ports {port_quant}"
+            nmap_cmd += f"-sU "
 
-        scan_cmd += f" --rate 10000 -oL {mass_direct}\\{site}_mass_{timestamp}.txt"
+        mass_cmd += f" --rate 10000 -oL {mass_direct}\\{site}_mass_{timestamp}.txt"
 
-        sp.run(scan_cmd, shell=True)
+        sp.run(mass_cmd, shell=True)
 
         # Load, clean, and format our masscan txt for nmap
         addresses, ports = masscan_parser(f"{mass_direct}\\{site}_mass_{timestamp}.txt")
 
-        # Launch an Nmap scan for each set of data
-        sp.run(f"nmap -sS -sU -Pn {addresses} -p {ports} -oX {nmap_direct}\\{site}_{timestamp}.xml",
-               shell=True)
+        if os_detection:
+            nmap_cmd += "-O "
 
+        # Finish building our Nmap command with collected data from Masscan, then execute
+        nmap_cmd += f"-p {ports} -Pn {addresses} -oX {nmap_direct}\\{site}_{timestamp}.xml"
+        sp.run(nmap_cmd, shell=True)
 
-def shodan_query(subnet: str) -> dict:
-    params = {'key': shodan_key,
-              'query': f'net:{subnet}'}
-
-    response = requests.get(shodan_uri, params=params)
-
-    if response.status_code == 200:
-        return response.json()
+        return addresses, ports
