@@ -1,21 +1,18 @@
 import datetime
-from os import mkdir
+import pathlib
 import subprocess as sp
 from typing import Tuple
 
 shodan_uri = 'https://api.shodan.io/shodan/host/search'
 
-nmap_direct, mass_direct = '.\\Scans\\Nmap', '.\\Scans\\Masscan'
+nmap_direct, mass_direct = 'Scans/Nmap', 'Scans/Masscan'
 
 
 def direct_create():
     directories = ['Scans', nmap_direct, mass_direct]
 
     for directory in directories:
-        try:
-            mkdir(directory)
-        except FileExistsError:
-            pass
+        pathlib.Path(directory).mkdir(exist_ok=True)
 
 
 def masscan_parser(masscan_output: str) -> Tuple[str, str]:
@@ -37,6 +34,9 @@ def masscan_parser(masscan_output: str) -> Tuple[str, str]:
 def scan_handler(ranges: dict, timestamp: datetime, port_quant: str = '1-65535', port_type: str = 'tcp_udp',
                  os_detection: bool = True):
     for site, subnet in ranges.items():
+        target_mass_file = str(pathlib.Path(f"Scans/Masscan/{site}_mass_{timestamp}"))
+        target_nmap_file = str(pathlib.Path(f"Scans/Nmap/{site}_{timestamp}"))
+
         mass_cmd = f"masscan {subnet} "
         nmap_cmd = "nmap "
 
@@ -52,18 +52,16 @@ def scan_handler(ranges: dict, timestamp: datetime, port_quant: str = '1-65535',
             mass_cmd += f"--udp-ports {port_quant}"
             nmap_cmd += f"-sU "
 
-        mass_cmd += f" --rate 10000 -oL {mass_direct}\\{site}_mass_{timestamp}.txt"
+        mass_cmd += f" --rate 10000 -oL {target_mass_file}.txt"
 
         sp.run(mass_cmd, shell=True)
 
         # Load, clean, and format our masscan txt for nmap
-        addresses, ports = masscan_parser(f"{mass_direct}\\{site}_mass_{timestamp}.txt")
+        addresses, ports = masscan_parser(f"{target_mass_file}.txt")
 
         if os_detection:
             nmap_cmd += "-O "
 
         # Finish building our Nmap command with collected data from Masscan, then execute
-        nmap_cmd += f"-p {ports} -Pn {addresses} -oX {nmap_direct}\\{site}_{timestamp}.xml"
+        nmap_cmd += f"-p {ports} -Pn {addresses} -oX {target_nmap_file}.xml"
         sp.run(nmap_cmd, shell=True)
-
-        return addresses, ports
