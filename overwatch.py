@@ -1,5 +1,5 @@
 from config import *
-from pyscan_funcs import *
+from overwatch_funcs import *
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
 

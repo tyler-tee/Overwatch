@@ -1,7 +1,8 @@
-/config.py
+/ignored.py
 /.idea/
 /Lib/site-packages/
 /Scripts/
 /pyvenv.cfg
 /Scans/
 /icons/
+*.pyc

@@ -9,6 +9,7 @@ nmap_direct, mass_direct = 'Scans/Nmap', 'Scans/Masscan'
 
 
 def direct_create():
+    #
     directories = ['Scans', nmap_direct, mass_direct]
 
     for directory in directories:
