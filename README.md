@@ -2,9 +2,9 @@
 Simple port scanner designed to leverage the best of both worlds from Masscan and Nmap..
 
 ## Prerequisites
-> Python
-> Nmap
-> Masscan
+-Python
+-Nmap
+-Masscan
 
 ## Usage
 
