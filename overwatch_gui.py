@@ -1,7 +1,7 @@
 import PySimpleGUIQt as sg
 from shodan import Shodan, exception
 from config import shodan_key
-from pyscan_funcs import *
+from overwatch_funcs import *
 
 sg.ChangeLookAndFeel('Dark')
 
@@ -34,7 +34,7 @@ layout = [
      sg.Stretch()]
 ]
 
-window = sg.Window('PyScan', layout, grab_anywhere=True, no_titlebar=True, keep_on_top=True)
+window = sg.Window('Overwatch', layout, grab_anywhere=True, no_titlebar=True, keep_on_top=True)
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
 
