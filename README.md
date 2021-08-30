@@ -12,7 +12,7 @@ Simple port scanner designed to leverage the best of both worlds from Masscan an
 ```
 Configure your desired ranges in config.py ({'Site': 'Subnet'})
 Launch Overwatch with elevated privileges:
->sudo ./overwatch.py
+>sudo python3 ./overwatch.py
 ```
 
 ## License
