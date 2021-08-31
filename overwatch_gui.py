@@ -85,3 +85,5 @@ while True:
             config['theme'] = values['menu']
             with open('config.py', 'w') as f:
                 f.write(f"config = {config}")
+            sg.popup('Theme updated! Please re-launch Overwatch to see your changes.',
+                     title='Theme Updated', keep_on_top=True)
