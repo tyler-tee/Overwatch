@@ -13,4 +13,5 @@ if not ranges:
     subnet = input('Please enter your target subnet.')
 
 # Initiate the scan
-scan_handler(ranges, timestamp)
+if __name__ == '__main__':
+    scan_handler(ranges, timestamp)
