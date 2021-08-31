@@ -5,8 +5,6 @@ import subprocess as sp
 from typing import Tuple
 
 
-shodan_uri = 'https://api.shodan.io/shodan/host/search'
-
 nmap_direct, mass_direct = 'Scans/Nmap', 'Scans/Masscan'
 
 

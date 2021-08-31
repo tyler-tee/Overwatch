@@ -1,13 +1,17 @@
 import PySimpleGUIQt as sg
 from shodan import Shodan, exception
-from config import shodan_key
+from config import config
 from overwatch_funcs import *
 
-sg.ChangeLookAndFeel('Dark')
+sg.ChangeLookAndFeel(config['theme'])
+theme_lst = sg.theme_list()
 
 layout = [
-    [sg.ButtonMenu('Menu', menu_def=['Menu', ['Open Scan', 'Scan Diff', 'About', 'Exit']],
-                   size=(10, 1), button_color=(None, '#383838'))],
+    [sg.ButtonMenu('Menu', menu_def=['Menu', 
+                                        ['Open Scan', 'Scan Diff', 'About', 
+                                            'Theme', theme_lst, 'Exit']
+                                    ],
+                   size=(10, 1), button_color=(None, '#383838'), key='menu')],
     [sg.Frame(layout=[
         [sg.Text('IP/Range:'), sg.In('', size=(30, 1), key='ranges')]
     ], title='Targets')],
@@ -58,7 +62,7 @@ while True:
                                         os_detection=values['os_detect'])
 
         if values['shodan_query']:
-            shodan_api = Shodan(shodan_key)
+            shodan_api = Shodan(config['shodan_key'])
             shodan_results = {}
 
             for address in addresses:
@@ -75,3 +79,9 @@ while True:
 
                 except exception.APIError:
                     shodan_results[address] = 'No information found for this host.'
+
+    if event == 'menu':
+        if values['menu'] in theme_lst:
+            config['theme'] = values['menu']
+            with open('config.py', 'w') as f:
+                f.write(f"config = {config}")

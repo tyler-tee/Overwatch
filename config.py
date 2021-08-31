@@ -1,3 +1,1 @@
-shodan_key = 'shodankeyhere'
-
-ranges = {'Sample': '192.168.0.1/24'}
+config = {'shodan_key': 'shodankeyhere', 'shodan_uri': 'https://api.shodan.io/shodan/host/search', 'ranges': {'Sample': '192.168.0.1/24'}, 'theme': 'DarkBlue2'}

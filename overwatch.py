@@ -1,7 +1,8 @@
-from config import *
+from config import config
 from overwatch_funcs import *
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
+ranges = config['ranges']
 
 # Create our working directories
 direct_create()
