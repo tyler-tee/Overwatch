@@ -3,6 +3,7 @@ import pathlib
 import pandas as pd
 import subprocess as sp
 from typing import Tuple
+import xml.etree.ElementTree as et
 
 
 nmap_direct, mass_direct = 'Scans/Nmap', 'Scans/Masscan'
@@ -78,6 +79,57 @@ def df_generator(raw_txt: str):
     df_scan_data = pd.DataFrame(records)
 
     return df_scan_data
+
+
+def xml_to_df(scan_xml):
+    """
+    (Try) to convert Nmap XML scan output into a Pandas dataframe.
+    """
+
+    scan_data = [] # Empty list to which data will be appended.
+
+    # Read in XML file, establish XML root, then parse all scanned hosts.
+    tree = et.parse(scan_xml)
+    root = tree.getroot()
+    hosts = root.findall('host')
+
+    # Iterate over hosts to find IP, Status, hostnames, ports, and associated port information.
+    for host in hosts:
+        address = host.findall('address')[0].attrib['addr']
+        status = host.findall('status')[0].attrib['state']
+
+        try:
+            hostnames = host.findall('hostnames')[0].attrib['name']
+        except Exception as e:
+            hostnames = ''
+            
+        port_element = host.findall('ports')
+        ports = port_element[0].findall('port')
+        for port in ports:
+            port_data = []
+            proto = port.attrib['protocol']
+            port_id = port.attrib['portid']
+            try:
+                service = port.findall('service')[0].attrib['name']
+            except Exception as e:
+                service = ''
+            try:
+                state = port.findall('state')[0].attrib['state']
+            except Exception as e:
+                state = ''
+
+            # Create a list of the port data
+            port_data.extend((address, status, hostnames,
+                                proto, port_id, service, state))
+                
+                # Add the port data to the host data
+            scan_data.append(port_data)
+    
+    # Establish dataframe columns and create the dataframe.
+    df_cols = ['host', 'status', 'hostnames', 'protocol', 'port', 'service', 'port_state']
+    df_scan = pd.DataFrame(data=scan_data, columns=df_cols)
+
+    return df_scan
 
 
 def scan_handler(ranges: dict, timestamp: datetime, port_quant: str = '1-65535', port_type: str = 'tcp_udp',
