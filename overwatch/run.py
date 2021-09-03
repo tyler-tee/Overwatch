@@ -2,7 +2,6 @@ from config import config
 import overwatch_funcs
 import overwatch_gui
 import datetime
-import PySimpleGUIQt as sg
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
 try:

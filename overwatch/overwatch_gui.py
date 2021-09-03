@@ -14,7 +14,7 @@ layout = [
                                     ],
                    size=(10, 1), button_color=(None, '#383838'), key='menu')],
     [sg.Frame(layout=[
-        [sg.Text('IP/Range:'), sg.In('', size=(30, 1), key='ranges')]
+        [sg.Text('IP/Subnet:'), sg.In('', size=(30, 1), key='ranges')]
     ], title='Targets')],
     [sg.Frame(layout=[
         [sg.Column([
