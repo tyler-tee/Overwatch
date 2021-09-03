@@ -89,10 +89,28 @@ def run_gui():
                     f.write(f"config = {config}")
                 sg.popup('Theme updated! Please re-launch Overwatch to see your changes.',
                         title='Theme Updated', keep_on_top=True)
+
             elif values['menu'] in ('GUI', 'Headless'):
                 config['run_mode'] = values['menu'].lower()
                 with open('config.py', 'w') as f:
                     f.write(f"config = {config}")
+            
+            elif values['menu'] == 'Open Scan':
+                scan = sg.popup_get_file('Select Previous Scan', keep_on_top=True)
+                if scan.endswith('xml'):
+                    df_scan = xml_to_df(scan)
 
+                    df_scan_values = df_scan.values.tolist()
+
+                    scan_layout = [
+                        [sg.Table(values=df_scan_values, headings=config['df_cols'])]
+                    ]
+
+                    scan_window = sg.Window("Scan Results", scan_layout)
+                    scan_event, scan_values = scan_window.read()
+                else:
+                    sg.popup('Sorry, that file type isn\'t supported just yet!',
+                             title='Unsupported File Type', keep_on_top=True)
+        
 if __name__ == '__main__':
     run_gui()
