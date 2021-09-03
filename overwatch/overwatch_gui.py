@@ -9,6 +9,7 @@ theme_lst = sg.theme_list()
 layout = [
     [sg.ButtonMenu('Menu', menu_def=['Menu', 
                                         ['Open Scan', 'Scan Diff', 'About', 
+                                            'Startup Mode', ['GUI', 'Headless'],
                                             'Theme', theme_lst, 'Exit']
                                     ],
                    size=(10, 1), button_color=(None, '#383838'), key='menu')],
@@ -88,6 +89,10 @@ def run_gui():
                     f.write(f"config = {config}")
                 sg.popup('Theme updated! Please re-launch Overwatch to see your changes.',
                         title='Theme Updated', keep_on_top=True)
+            elif values['menu'] in ('GUI', 'Headless'):
+                config['run_mode'] = values['menu'].lower()
+                with open('config.py', 'w') as f:
+                    f.write(f"config = {config}")
 
 if __name__ == '__main__':
     run_gui()
