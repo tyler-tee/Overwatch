@@ -1,5 +1,7 @@
 # Overwatch
-Simple port scanner designed to leverage the best of both worlds from Masscan and Nmap.
+Overwatch is intended to leverage Masscan's speed and Nmap's versatility.
+
+Rapidly discover any open ports using Masscan, then automatically feed only those ports to Nmap for further interrogation.
 
 ## Prerequisites
 - Python3.5+
@@ -9,11 +11,17 @@ Simple port scanner designed to leverage the best of both worlds from Masscan an
 ## Usage
 
 ### General Use
-If running headless, configure your desired ranges in config.py ({'Scan_Title': 'Subnet'})
+For best results, please launch Overwatch with elevated privileges:
+> sudo python3 ./run.py
 
-Then simply launch Overwatch with elevated privileges:
->sudo python3 ./run.py
+### Headless
+If running headless, configure your desired ranges in config.py.
+Ex: ({'Scan_Title': 'Subnet'})
 
+Headless mode will allow you to run Overwatch unattended. Set it up with a cronjob/scheduled task and you can keep an eye on your external footprint automatically.
+
+If GUI use is never needed, configure config.py accordingly (you can also set this behavior using the GUI):
+> 'run_mode': 'headless'
 
 ### GUI
 ![main](https://user-images.githubusercontent.com/64701075/132075379-c17ef979-df80-45f3-bf34-f4ce73429045.png)
