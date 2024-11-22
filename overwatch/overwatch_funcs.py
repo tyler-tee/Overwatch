@@ -71,11 +71,9 @@ def df_generator(raw_txt: str):
     for finding in raw_data:
         host = host_parser(finding)
         ports = port_parser(finding)
-        
-        for port in ports:
-            records.append([host] + ports)
-        
-    
+
+        records = [[host] + port for port in ports]
+
     df_scan_data = pd.DataFrame(records)
 
     return df_scan_data
@@ -86,7 +84,7 @@ def xml_to_df(scan_xml):
     (Try) to convert Nmap XML scan output into a Pandas dataframe.
     """
 
-    scan_data = [] # Empty list to which data will be appended.
+    scan_data = []  # Empty list to which data will be appended.
 
     # Read in XML file, establish XML root, then parse all scanned hosts.
     tree = et.parse(scan_xml)
@@ -101,8 +99,9 @@ def xml_to_df(scan_xml):
         try:
             hostnames = host.findall('hostnames')[0].attrib['name']
         except Exception as e:
+            print(e)
             hostnames = ''
-            
+
         port_element = host.findall('ports')
         ports = port_element[0].findall('port')
         for port in ports:
@@ -112,19 +111,21 @@ def xml_to_df(scan_xml):
             try:
                 service = port.findall('service')[0].attrib['name']
             except Exception as e:
+                print(e)
                 service = ''
             try:
                 state = port.findall('state')[0].attrib['state']
             except Exception as e:
+                print(e)
                 state = ''
 
             # Create a list of the port data
             port_data.extend((address, status, hostnames,
-                                proto, port_id, service, state))
-                
-                # Add the port data to the host data
+                              proto, port_id, service, state))
+
+            # Add the port data to the host data
             scan_data.append(port_data)
-    
+
     # Establish dataframe columns and create the dataframe.
     df_cols = ['host', 'status', 'hostnames', 'protocol', 'port', 'service', 'port_state']
     df_scan = pd.DataFrame(data=scan_data, columns=df_cols)
@@ -143,15 +144,15 @@ def scan_handler(ranges: dict, timestamp: datetime, port_quant: str = '1-65535',
 
         if port_type == 'tcp_udp':
             mass_cmd += f"-p{port_quant},U:{port_quant}"
-            nmap_cmd += f"-sS -sU "
+            nmap_cmd += "-sS -sU "
 
         elif port_type == 'tcp':
             mass_cmd += f"-p{port_quant}"
-            nmap_cmd += f"-sS "
+            nmap_cmd += "-sS "
 
         else:
             mass_cmd += f"--udp-ports {port_quant}"
-            nmap_cmd += f"-sU "
+            nmap_cmd += "-sU "
 
         mass_cmd += f" --rate 10000 -oL {target_mass_file}.txt"
 
