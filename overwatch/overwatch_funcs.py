@@ -2,7 +2,7 @@ import datetime
 import pathlib
 import pandas as pd
 import subprocess as sp
-from typing import Tuple
+from typing import Tuple, List
 import xml.etree.ElementTree as et
 
 
@@ -46,7 +46,7 @@ def host_parser(raw_txt: str) -> str:
     return host
 
 
-def port_parser(raw_txt: str) -> str:
+def port_parser(raw_txt: str) -> List:
     """
     Simple function to parse port information from Nmap txt file.
     """
