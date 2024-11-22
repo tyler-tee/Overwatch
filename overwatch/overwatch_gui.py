@@ -1,6 +1,6 @@
 import datetime
 import PySimpleGUIQt as sg
-from shodan import Shodan, exception
+from shodan import Shodan
 from config import config
 from overwatch_funcs import scan_handler, xml_to_df
 
@@ -63,73 +63,101 @@ def get_port_type(values):
         return 'udp'
 
 
+def handle_exit(event):
+    return event in (None, 'Exit')
+
+
+def handle_scan_init(values, sg, config, timestamp):
+    site = sg.popup_get_text('Choose a label for your scan:', keep_on_top=True)
+    if not site:
+        return
+
+    address_ranges = {site: values['ranges']}
+    port_ranges = get_port_ranges(values, sg)
+    port_types = get_port_type(values)
+
+    addresses, _ = scan_handler(address_ranges, timestamp, port_ranges, port_types,
+                                os_detection=values['os_detect'])
+
+    if values['shodan_query']:
+        shodan_results = query_shodan(addresses, config['shodan_key'])
+        return shodan_results
+
+
+def query_shodan(addresses, api_key):
+    shodan_api = Shodan(api_key)
+    shodan_results = {}
+
+    for address in addresses:
+        try:
+            host = shodan_api.host(address, history=True)
+            exploits = shodan_api.exploits.search(query=f"net:{address}")
+            shodan_results[address] = {
+                'Domains': host['domains'],
+                'Hostnames': host['hostnames'],
+                'Port History': host['ports'],
+                'OS': host['os'],
+                'Exploits': exploits
+            }
+        except Exception:  # Use a more specific exception if possible
+            shodan_results[address] = 'No information found for this host.'
+    return shodan_results
+
+
+def handle_menu(values, sg, config, theme_lst):
+    if values['menu'] in theme_lst:
+        update_theme(values['menu'], config)
+        sg.popup('Theme updated! Please re-launch Overwatch to see your changes.',
+                 title='Theme Updated', keep_on_top=True)
+    elif values['menu'] in ('GUI', 'Headless'):
+        update_run_mode(values['menu'], config)
+    elif values['menu'] == 'Open Scan':
+        open_scan(sg, config)
+
+
+def update_theme(theme, config):
+    config['theme'] = theme
+    with open('config.py', 'w') as f:
+        f.write(f"config = {config}")
+
+
+def update_run_mode(mode, config):
+    config['run_mode'] = mode.lower()
+    with open('config.py', 'w') as f:
+        f.write(f"config = {config}")
+
+
+def open_scan(sg, config):
+    scan = sg.popup_get_file('Select Previous Scan', keep_on_top=True)
+    if scan and scan.endswith('xml'):
+        df_scan = xml_to_df(scan)
+        show_scan_results(df_scan, config['df_cols'], sg)
+    else:
+        sg.popup('Sorry, that file type isn\'t supported just yet!',
+                 title='Unsupported File Type', keep_on_top=True)
+
+
+def show_scan_results(df_scan, columns, sg):
+    df_scan_values = df_scan.values.tolist()
+    scan_layout = [
+        [sg.Table(values=df_scan_values, headings=columns)]
+    ]
+    scan_window = sg.Window("Scan Results", scan_layout)
+    scan_window.read()
+
+
 def run_gui():
     while True:
         event, values = window.read()
 
-        if event in (None, 'Exit'):
+        if handle_exit(event):
             break
 
         if event == 'scan_init':
-            site = sg.popup_get_text('Choose a label for your scan:', keep_on_top=True)
-
-            address_ranges = {site: values['ranges']}
-
-            port_ranges = get_port_ranges(values, sg)
-
-            port_types = get_port_type(values)
-
-            addresses, _ = scan_handler(address_ranges, timestamp, port_ranges, port_types,
-                                        os_detection=values['os_detect'])
-
-            if values['shodan_query']:
-                shodan_api = Shodan(config['shodan_key'])
-                shodan_results = {}
-
-                for address in addresses:
-                    try:
-                        host = shodan_api.host(address, history=True)
-                        exploits = shodan_api.exploits.search(query=f"net:{address}")
-                        shodan_results[address] = {
-                            'Domains': host['domains'],
-                            'Hostnames': host['hostnames'],
-                            'Port History': host['ports'],
-                            'OS': host['os'],
-                            'Exploits': exploits
-                        }
-
-                    except exception.APIError:
-                        shodan_results[address] = 'No information found for this host.'
+            handle_scan_init(values, sg, config, timestamp)
 
         if event == 'menu':
-            if values['menu'] in theme_lst:
-                config['theme'] = values['menu']
-                with open('config.py', 'w') as f:
-                    f.write(f"config = {config}")
-                sg.popup('Theme updated! Please re-launch Overwatch to see your changes.',
-                         title='Theme Updated', keep_on_top=True)
-
-            elif values['menu'] in ('GUI', 'Headless'):
-                config['run_mode'] = values['menu'].lower()
-                with open('config.py', 'w') as f:
-                    f.write(f"config = {config}")
-
-            elif values['menu'] == 'Open Scan':
-                scan = sg.popup_get_file('Select Previous Scan', keep_on_top=True)
-                if scan.endswith('xml'):
-                    df_scan = xml_to_df(scan)
-
-                    df_scan_values = df_scan.values.tolist()
-
-                    scan_layout = [
-                        [sg.Table(values=df_scan_values, headings=config['df_cols'])]
-                    ]
-
-                    scan_window = sg.Window("Scan Results", scan_layout)
-                    scan_window.read()
-                else:
-                    sg.popup('Sorry, that file type isn\'t supported just yet!',
-                             title='Unsupported File Type', keep_on_top=True)
+            handle_menu(values, sg, config, theme_lst)
 
 
 if __name__ == '__main__':
