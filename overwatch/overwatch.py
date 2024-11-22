@@ -1,5 +1,7 @@
+import datetime
 from config import config
-from overwatch_funcs import *
+from overwatch_funcs import direct_create, scan_handler
+
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
 ranges = config['ranges']
