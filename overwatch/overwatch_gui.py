@@ -45,6 +45,24 @@ window = sg.Window('Overwatch', layout, grab_anywhere=True, no_titlebar=True, ke
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
 
 
+def get_port_ranges(values, sg):
+    if values['ports_all']:
+        return '1-65535'
+    elif values['ports_top']:
+        return '1-1024'
+    else:
+        return sg.popup_get_text('Ports: ')
+
+
+def get_port_type(values):
+    if values['tcp_udp']:
+        return 'tcp_udp'
+    elif values['tcp']:
+        return 'tcp'
+    else:
+        return 'udp'
+
+
 def run_gui():
     while True:
         event, values = window.read()
@@ -57,13 +75,12 @@ def run_gui():
 
             address_ranges = {site: values['ranges']}
 
-            port_ranges = '1-65535' if values['ports_all'] else '1-1024' if values['ports_top'] else \
-                sg.popup_get_text('Ports: ')
+            port_ranges = get_port_ranges(values, sg)
 
-            port_types = 'tcp_udp' if values['tcp_udp'] else 'tcp' if values['tcp'] else 'udp'
+            port_types = get_port_type(values)
 
-            addresses, ports = scan_handler(address_ranges, timestamp, port_ranges, port_types,
-                                            os_detection=values['os_detect'])
+            addresses, _ = scan_handler(address_ranges, timestamp, port_ranges, port_types,
+                                        os_detection=values['os_detect'])
 
             if values['shodan_query']:
                 shodan_api = Shodan(config['shodan_key'])
@@ -109,7 +126,7 @@ def run_gui():
                     ]
 
                     scan_window = sg.Window("Scan Results", scan_layout)
-                    scan_event, scan_values = scan_window.read()
+                    scan_window.read()
                 else:
                     sg.popup('Sorry, that file type isn\'t supported just yet!',
                              title='Unsupported File Type', keep_on_top=True)
