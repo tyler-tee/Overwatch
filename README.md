@@ -1,4 +1,7 @@
 # Overwatch
+
+![SonarCloud Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=tyler-tee_Overwatch&metric=alert_status)
+
 Overwatch is intended to leverage Masscan's speed and Nmap's versatility.
 
 Rapidly discover any open ports using Masscan, then automatically feed only those ports to Nmap for further interrogation.
