@@ -33,4 +33,4 @@ If GUI use is never needed, configure config.py accordingly (you can also set th
 ![scan_results](https://user-images.githubusercontent.com/64701075/132075380-726908c8-1164-4566-b5b3-60fb0ab7f01a.png)
 
 ## License
-[GNUv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+MIT
