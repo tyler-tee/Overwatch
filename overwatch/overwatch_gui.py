@@ -1,17 +1,18 @@
+import datetime
 import PySimpleGUIQt as sg
 from shodan import Shodan, exception
 from config import config
-from overwatch_funcs import *
+from overwatch_funcs import scan_handler, xml_to_df
 
 sg.ChangeLookAndFeel(config['theme'])
 theme_lst = sg.theme_list()
 
 layout = [
-    [sg.ButtonMenu('Menu', menu_def=['Menu', 
-                                        ['Open Scan', 'Scan Diff', 'About', 
-                                            'Startup Mode', ['GUI', 'Headless'],
-                                            'Theme', theme_lst, 'Exit']
-                                    ],
+    [sg.ButtonMenu('Menu', menu_def=['Menu',
+                                     ['Open Scan', 'Scan Diff', 'About',
+                                      'Startup Mode', ['GUI', 'Headless'],
+                                      'Theme', theme_lst, 'Exit']
+                                     ],
                    size=(10, 1), button_color=(None, '#383838'), key='menu')],
     [sg.Frame(layout=[
         [sg.Text('IP/Subnet:'), sg.In('', size=(30, 1), key='ranges')]
@@ -42,6 +43,7 @@ layout = [
 window = sg.Window('Overwatch', layout, grab_anywhere=True, no_titlebar=True, keep_on_top=True)
 
 timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
+
 
 def run_gui():
     while True:
@@ -88,13 +90,13 @@ def run_gui():
                 with open('config.py', 'w') as f:
                     f.write(f"config = {config}")
                 sg.popup('Theme updated! Please re-launch Overwatch to see your changes.',
-                        title='Theme Updated', keep_on_top=True)
+                         title='Theme Updated', keep_on_top=True)
 
             elif values['menu'] in ('GUI', 'Headless'):
                 config['run_mode'] = values['menu'].lower()
                 with open('config.py', 'w') as f:
                     f.write(f"config = {config}")
-            
+
             elif values['menu'] == 'Open Scan':
                 scan = sg.popup_get_file('Select Previous Scan', keep_on_top=True)
                 if scan.endswith('xml'):
@@ -111,6 +113,7 @@ def run_gui():
                 else:
                     sg.popup('Sorry, that file type isn\'t supported just yet!',
                              title='Unsupported File Type', keep_on_top=True)
-        
+
+
 if __name__ == '__main__':
     run_gui()
